@@ -122,43 +122,7 @@ finsight-watsonx/
 └── README.md
 ```
 
----
 
-## 🔒 Security Notes
 
-- API keys are never exposed to the browser
-- All IBM Cloud credentials are handled server-side via the Express proxy
-- `.env` is gitignored — never push credentials to a public repo
-- Data source: publicly accessible SEC.gov filings (commercial use permitted)
-- No personal data or client data is processed
-
----
-
-## 📊 IBM watsonx.ai Integration Details
-
-- **Endpoint:** `/ml/v1/text/chat`
-- **Model:** `ibm/granite-3-8b-instruct`
-- **Auth:** IBM Cloud IAM token exchange via API key
-- **Project:** watsonx Challenge Sandbox
-- **Pattern:** Agentic RAG — document injected into context window as grounding
-
----
-
-## 🏆 Evaluation Alignment
-
-| Criterion | How FinSight addresses it |
-|---|---|
-| Completeness & feasibility | Fully working local prototype with real watsonx.ai inference |
-| Creativity & innovation | Dual-agent intent routing on top of RAG — not a simple chatbot |
-| Design & usability | Clean single-page UI, drag-and-drop upload, instant responses |
-| Effectiveness & efficiency | Grounded answers tied to uploaded documents; hallucination-resistant |
-
----
-
-## 📹 Demo Video
-
-[▶ Watch the 3-minute demo](YOUR_VIDEO_LINK_HERE)
-
----
 
 *Built with IBM watsonx.ai · Granite 3.8B Instruct · Node.js · 2026*
