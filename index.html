@@ -1,0 +1,923 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FinSight — AI Financial Analysis Agent | IBM watsonx</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap');
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'IBM Plex Sans', -apple-system, sans-serif;
+    background: #0a0a0f;
+    color: #e2e2e8;
+    min-height: 100vh;
+  }
+
+  .app {
+    display: grid;
+    grid-template-columns: 270px 1fr;
+    min-height: 100vh;
+  }
+
+  /* ── SIDEBAR ── */
+  .sidebar {
+    background: #0d0d14;
+    border-right: 1px solid rgba(55,138,221,0.12);
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .sidebar::before {
+    content: '';
+    position: absolute;
+    top: -80px; left: -80px;
+    width: 260px; height: 260px;
+    background: radial-gradient(circle, rgba(55,138,221,0.08) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .sidebar-header {
+    padding: 28px 20px 22px;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+  }
+
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 6px;
+  }
+
+  .logo-icon {
+    width: 34px; height: 34px;
+    background: linear-gradient(135deg, #378ADD, #1a56a8);
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 17px;
+    box-shadow: 0 0 16px rgba(55,138,221,0.3);
+  }
+
+  .logo-text {
+    font-size: 19px;
+    font-weight: 600;
+    color: #fff;
+    letter-spacing: -0.3px;
+  }
+
+  .logo-sub {
+    font-size: 11px;
+    color: rgba(255,255,255,0.3);
+    margin-left: 44px;
+    font-family: 'IBM Plex Mono', monospace;
+  }
+
+  .ibm-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    background: rgba(55,138,221,0.1);
+    border: 1px solid rgba(55,138,221,0.25);
+    border-radius: 4px;
+    padding: 3px 8px;
+    margin-left: 44px;
+    margin-top: 10px;
+    font-size: 10px;
+    color: #85B7EB;
+    font-family: 'IBM Plex Mono', monospace;
+    letter-spacing: 0.3px;
+  }
+
+  .sidebar-section {
+    padding: 18px 20px 10px;
+  }
+
+  .sidebar-label {
+    font-size: 9px;
+    font-weight: 600;
+    color: rgba(255,255,255,0.22);
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin-bottom: 10px;
+    font-family: 'IBM Plex Mono', monospace;
+  }
+
+  .agent-card {
+    background: rgba(255,255,255,0.03);
+    border-radius: 8px;
+    padding: 11px 13px;
+    margin-bottom: 7px;
+    cursor: pointer;
+    border: 1px solid rgba(255,255,255,0.06);
+    transition: all 0.18s ease;
+  }
+
+  .agent-card:hover {
+    background: rgba(255,255,255,0.06);
+    border-color: rgba(55,138,221,0.2);
+  }
+
+  .agent-card.active {
+    background: rgba(55,138,221,0.1);
+    border-color: rgba(55,138,221,0.3);
+  }
+
+  .agent-name {
+    font-size: 12.5px;
+    font-weight: 500;
+    color: #e2e2e8;
+    margin-bottom: 3px;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+  }
+
+  .agent-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: #1D9E75;
+    box-shadow: 0 0 6px rgba(29,158,117,0.6);
+    flex-shrink: 0;
+  }
+
+  .agent-desc {
+    font-size: 10.5px;
+    color: rgba(255,255,255,0.3);
+    line-height: 1.5;
+    padding-left: 13px;
+  }
+
+  .upload-zone {
+    margin: 0 20px 10px;
+    background: rgba(255,255,255,0.02);
+    border: 1px dashed rgba(255,255,255,0.1);
+    border-radius: 8px;
+    padding: 16px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.18s;
+  }
+
+  .upload-zone:hover {
+    background: rgba(55,138,221,0.05);
+    border-color: rgba(55,138,221,0.35);
+  }
+
+  .upload-zone input { display: none; }
+
+  .upload-text {
+    font-size: 11.5px;
+    color: rgba(255,255,255,0.3);
+    line-height: 1.6;
+  }
+
+  .upload-text strong {
+    color: rgba(255,255,255,0.55);
+    font-weight: 500;
+  }
+
+  .file-badge {
+    margin: 0 20px 10px;
+    background: rgba(29,158,117,0.08);
+    border: 1px solid rgba(29,158,117,0.22);
+    border-radius: 6px;
+    padding: 7px 11px;
+    display: none;
+    align-items: center;
+    gap: 7px;
+  }
+
+  .file-badge.visible { display: flex; }
+
+  .file-badge-name {
+    font-size: 11px;
+    color: #5DCAA5;
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-family: 'IBM Plex Mono', monospace;
+  }
+
+  .arch-block {
+    font-size: 10.5px;
+    color: rgba(255,255,255,0.22);
+    line-height: 1.9;
+    padding: 0 2px;
+    font-family: 'IBM Plex Mono', monospace;
+  }
+
+  .sidebar-footer {
+    margin-top: auto;
+    padding: 14px 20px;
+    border-top: 1px solid rgba(255,255,255,0.06);
+    font-size: 10px;
+    color: rgba(255,255,255,0.18);
+    line-height: 1.7;
+    font-family: 'IBM Plex Mono', monospace;
+  }
+
+  /* ── MAIN ── */
+  .main {
+    display: flex;
+    flex-direction: column;
+    background: #0f0f18;
+    position: relative;
+  }
+
+  .topbar {
+    padding: 15px 28px;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: rgba(0,0,0,0.2);
+    backdrop-filter: blur(10px);
+  }
+
+  .topbar-title {
+    font-size: 14px;
+    font-weight: 500;
+    color: #e2e2e8;
+  }
+
+  .topbar-meta {
+    font-size: 11px;
+    color: rgba(255,255,255,0.28);
+    margin-top: 2px;
+    font-family: 'IBM Plex Mono', monospace;
+  }
+
+  .status-pill {
+    background: rgba(29,158,117,0.12);
+    color: #5DCAA5;
+    font-size: 10.5px;
+    font-weight: 500;
+    padding: 4px 10px;
+    border-radius: 20px;
+    border: 1px solid rgba(29,158,117,0.25);
+    font-family: 'IBM Plex Mono', monospace;
+  }
+
+  /* ── API BANNER ── */
+  .api-banner {
+    background: rgba(186,117,23,0.08);
+    border: 1px solid rgba(186,117,23,0.25);
+    border-radius: 8px;
+    padding: 14px 18px;
+    margin: 16px 28px 0;
+    font-size: 13px;
+    color: #FAC775;
+  }
+
+  .api-banner strong {
+    display: block;
+    margin-bottom: 6px;
+    font-size: 13px;
+    color: #FAC775;
+  }
+
+  .api-row {
+    display: flex;
+    gap: 8px;
+    margin-top: 8px;
+  }
+
+  .api-row input {
+    flex: 1;
+    background: rgba(0,0,0,0.3);
+    border: 1px solid rgba(186,117,23,0.3);
+    border-radius: 6px;
+    padding: 7px 10px;
+    font-size: 12px;
+    font-family: 'IBM Plex Mono', monospace;
+    outline: none;
+    color: #e2e2e8;
+  }
+
+  .api-row input:focus {
+    border-color: rgba(186,117,23,0.6);
+  }
+
+  .api-save {
+    background: #378ADD;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    padding: 7px 14px;
+    font-size: 12px;
+    cursor: pointer;
+    white-space: nowrap;
+    font-weight: 500;
+    font-family: 'IBM Plex Sans', sans-serif;
+    transition: opacity 0.15s;
+  }
+
+  .api-save:hover { opacity: 0.85; }
+
+  .api-hint {
+    font-size: 10.5px;
+    color: rgba(250,199,117,0.5);
+    margin-top: 5px;
+    font-family: 'IBM Plex Mono', monospace;
+  }
+
+  /* ── CHAT ── */
+  .chat-area {
+    flex: 1;
+    overflow-y: auto;
+    padding: 24px 28px;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    min-height: 300px;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255,255,255,0.08) transparent;
+  }
+
+  .chat-area::-webkit-scrollbar { width: 4px; }
+  .chat-area::-webkit-scrollbar-track { background: transparent; }
+  .chat-area::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 2px; }
+
+  .message { display: flex; gap: 11px; }
+
+  .message.user {
+    flex-direction: row-reverse;
+    align-self: flex-end;
+    max-width: 78%;
+  }
+
+  .avatar {
+    width: 30px; height: 30px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    font-weight: 600;
+    font-family: 'IBM Plex Mono', monospace;
+  }
+
+  .avatar.agent {
+    background: linear-gradient(135deg, #378ADD, #1a56a8);
+    color: white;
+    box-shadow: 0 0 10px rgba(55,138,221,0.3);
+  }
+
+  .avatar.user {
+    background: rgba(255,255,255,0.08);
+    color: rgba(255,255,255,0.5);
+  }
+
+  .bubble {
+    padding: 11px 15px;
+    border-radius: 12px;
+    font-size: 13.5px;
+    line-height: 1.7;
+    max-width: 680px;
+  }
+
+  .bubble.agent {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 4px 12px 12px 12px;
+  }
+
+  .bubble.user {
+    background: rgba(55,138,221,0.15);
+    border: 1px solid rgba(55,138,221,0.2);
+    color: #e2e2e8;
+    border-radius: 12px 4px 12px 12px;
+  }
+
+  .bubble .tag {
+    display: inline-block;
+    font-size: 9px;
+    font-weight: 600;
+    padding: 2px 7px;
+    border-radius: 3px;
+    margin-bottom: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    font-family: 'IBM Plex Mono', monospace;
+  }
+
+  .tag.analyst { background: rgba(55,138,221,0.15); color: #85B7EB; }
+  .tag.news    { background: rgba(186,117,23,0.15);  color: #FAC775; }
+
+  .bubble p { margin-bottom: 7px; }
+  .bubble p:last-child { margin-bottom: 0; }
+  .bubble ul { margin: 5px 0 7px 16px; }
+  .bubble li { margin-bottom: 3px; color: rgba(226,226,232,0.85); }
+  .bubble strong { font-weight: 500; color: #fff; }
+
+  /* ── METRICS ── */
+  .metric-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 7px;
+    margin: 10px 0;
+  }
+
+  .metric-box {
+    background: rgba(0,0,0,0.3);
+    border: 1px solid rgba(55,138,221,0.15);
+    border-radius: 7px;
+    padding: 9px 11px;
+  }
+
+  .metric-label { font-size: 10px; color: rgba(255,255,255,0.3); margin-bottom: 3px; font-family: 'IBM Plex Mono', monospace; }
+  .metric-value { font-size: 16px; font-weight: 600; color: #fff; font-family: 'IBM Plex Mono', monospace; }
+  .metric-delta { font-size: 10px; margin-top: 2px; font-family: 'IBM Plex Mono', monospace; }
+  .delta-up   { color: #5DCAA5; }
+  .delta-down { color: #E24B4A; }
+
+  /* ── TYPING ── */
+  .typing { display: flex; gap: 4px; align-items: center; padding: 4px 0; }
+  .dot {
+    width: 5px; height: 5px;
+    border-radius: 50%;
+    background: rgba(55,138,221,0.5);
+    animation: blink 1.2s infinite;
+  }
+  .dot:nth-child(2) { animation-delay: 0.2s; }
+  .dot:nth-child(3) { animation-delay: 0.4s; }
+  @keyframes blink { 0%,80%,100%{opacity:0.2} 40%{opacity:1} }
+
+  /* ── WELCOME ── */
+  .welcome-state {
+    text-align: center;
+    padding: 70px 24px;
+    color: rgba(255,255,255,0.25);
+    margin: auto;
+  }
+
+  .welcome-icon { font-size: 38px; margin-bottom: 16px; }
+
+  .welcome-state h3 {
+    font-size: 17px;
+    font-weight: 400;
+    color: rgba(255,255,255,0.5);
+    margin-bottom: 8px;
+    letter-spacing: -0.2px;
+  }
+
+  .welcome-state p {
+    font-size: 13px;
+    line-height: 1.7;
+    max-width: 360px;
+    margin: 0 auto;
+    color: rgba(255,255,255,0.22);
+  }
+
+  /* ── INPUT AREA ── */
+  .input-area {
+    padding: 14px 28px 22px;
+    border-top: 1px solid rgba(255,255,255,0.06);
+    background: rgba(0,0,0,0.15);
+  }
+
+  .suggestions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 7px;
+    margin-bottom: 11px;
+  }
+
+  .suggestion {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 20px;
+    padding: 5px 12px;
+    font-size: 11.5px;
+    color: rgba(255,255,255,0.4);
+    cursor: pointer;
+    transition: all 0.15s;
+    white-space: nowrap;
+  }
+
+  .suggestion:hover {
+    background: rgba(55,138,221,0.1);
+    border-color: rgba(55,138,221,0.25);
+    color: #85B7EB;
+  }
+
+  .input-row { display: flex; gap: 9px; align-items: flex-end; }
+
+  .input-wrap {
+    flex: 1;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.09);
+    border-radius: 10px;
+    padding: 9px 13px;
+    display: flex;
+    align-items: center;
+    transition: border-color 0.15s;
+  }
+
+  .input-wrap:focus-within {
+    border-color: rgba(55,138,221,0.4);
+    background: rgba(55,138,221,0.04);
+  }
+
+  textarea {
+    flex: 1;
+    background: none;
+    border: none;
+    outline: none;
+    resize: none;
+    font-size: 13.5px;
+    font-family: 'IBM Plex Sans', sans-serif;
+    color: #e2e2e8;
+    max-height: 120px;
+    min-height: 22px;
+    line-height: 1.5;
+    width: 100%;
+  }
+
+  textarea::placeholder { color: rgba(255,255,255,0.2); }
+
+  .send-btn {
+    width: 38px; height: 38px;
+    background: #378ADD;
+    border: none;
+    border-radius: 9px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: all 0.15s;
+    box-shadow: 0 0 12px rgba(55,138,221,0.25);
+  }
+
+  .send-btn:hover { opacity: 0.85; box-shadow: 0 0 18px rgba(55,138,221,0.4); }
+  .send-btn:disabled { opacity: 0.25; cursor: not-allowed; box-shadow: none; }
+  .send-btn svg { width: 16px; height: 16px; fill: white; }
+
+  .model-note {
+    font-size: 10px;
+    color: rgba(255,255,255,0.14);
+    text-align: center;
+    margin-top: 8px;
+    font-family: 'IBM Plex Mono', monospace;
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <div class="logo">
+        <div class="logo-icon">📊</div>
+        <span class="logo-text">FinSight</span>
+      </div>
+      <div class="logo-sub">AI Financial Analysis Agent</div>
+      <div class="ibm-badge">⚡ IBM watsonx.ai · Granite</div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-label">Active Agents</div>
+      <div class="agent-card active" id="card-analyst" onclick="selectAgent('analyst')">
+        <div class="agent-name"><span class="agent-dot"></span>Financial Analyst</div>
+        <div class="agent-desc">Reads statements, extracts KPIs, identifies financial risks & opportunities</div>
+      </div>
+      <div class="agent-card" id="card-news" onclick="selectAgent('news')">
+        <div class="agent-name"><span class="agent-dot"></span>News Research Agent</div>
+        <div class="agent-desc">Provides market context and recent developments around financial topics</div>
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-label">Knowledge Base</div>
+      <label class="upload-zone">
+        <input type="file" id="fileInput" accept=".pdf,.txt,.csv" onchange="handleFile(event)">
+        <div style="font-size:20px;margin-bottom:6px">📄</div>
+        <div class="upload-text"><strong>Upload financial statement</strong><br>PDF, TXT, or CSV accepted</div>
+      </label>
+      <div class="file-badge" id="fileBadge">
+        <span>📎</span>
+        <span class="file-badge-name" id="fileName"></span>
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-label">Architecture</div>
+      <div class="arch-block">
+        Multi-agent RAG system<br>
+        IBM Granite 3.8B Instruct<br>
+        watsonx.ai · Dallas region<br>
+        Agentic orchestration pattern
+      </div>
+    </div>
+
+    <div class="sidebar-footer">
+      IBM SkillsBuild AI Experiential Lab 2026<br>
+      Banking &amp; Financial Services challenge<br>
+      Team: ALEXANDERNIKOLAEV
+    </div>
+  </aside>
+
+  <div class="main">
+    <div class="topbar">
+      <div>
+        <div class="topbar-title" id="topbarTitle">Financial Analyst Agent</div>
+        <div class="topbar-meta">Powered by IBM watsonx.ai · ibm/granite-3-8b-instruct</div>
+      </div>
+      <span class="status-pill" id="statusPill">● Ready</span>
+    </div>
+
+    <div class="api-banner" id="apiBanner">
+      <strong>🔑 Enter your IBM watsonx API key to activate</strong>
+      Your API key is used only in this browser session and never stored.
+      <div class="api-row">
+        <input type="password" id="apiKeyInput" placeholder="Paste IBM Cloud API key...">
+        <button class="api-save" onclick="activateAgent()">Activate Agent</button>
+      </div>
+      <div class="api-hint">Find your key: watsonx.ai home → Developer access → Create API key</div>
+    </div>
+
+    <div class="chat-area" id="chatArea">
+      <div class="welcome-state" id="welcomeState">
+        <div class="welcome-icon">🏦</div>
+        <h3>FinSight is ready</h3>
+        <p>Enter your IBM API key above, upload a financial statement, and start asking questions. I analyze revenue, margins, debt ratios, and research market news.</p>
+      </div>
+    </div>
+
+    <div class="input-area">
+      <div class="suggestions">
+        <span class="suggestion" onclick="useSuggestion(this)">Summarize key financial highlights</span>
+        <span class="suggestion" onclick="useSuggestion(this)">What are the main risk factors?</span>
+        <span class="suggestion" onclick="useSuggestion(this)">Analyze revenue growth trend</span>
+        <span class="suggestion" onclick="useSuggestion(this)">Latest news about this company</span>
+        <span class="suggestion" onclick="useSuggestion(this)">What is the debt-to-equity ratio?</span>
+        <span class="suggestion" onclick="useSuggestion(this)">Compare gross vs net margin</span>
+      </div>
+      <div class="input-row">
+        <div class="input-wrap">
+          <textarea id="userInput" placeholder="Ask about financials, risks, market news..." rows="1"
+            onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMessage()}"
+            oninput="autoResize(this)"></textarea>
+        </div>
+        <button class="send-btn" id="sendBtn" onclick="sendMessage()" disabled>
+          <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+        </button>
+      </div>
+      <div class="model-note">IBM watsonx.ai · ibm/granite-3-8b-instruct · Project: aa63ddd7</div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const PROJECT_ID = 'aa63ddd7-790c-4528-820e-48a7e9a93a84';
+const WX_URL  = '/api/chat';
+const MODEL_ID = 'ibm/granite-3-8b-instruct';
+
+let iamToken = '';
+let apiKey   = '';
+let activeAgent  = 'analyst';
+let fileContent  = '';
+let messages     = [];
+let busy         = false;
+
+async function getIAMToken(key) {
+  const res = await fetch('/api/token', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ apiKey: key })
+  });
+  const data = await res.json();
+  if (!data.access_token) throw new Error('Invalid API key or proxy error');
+  return data.access_token;
+}
+
+async function activateAgent() {
+  const input = document.getElementById('apiKeyInput');
+  apiKey = input.value.trim();
+  if (!apiKey) return;
+
+  const btn = document.querySelector('.api-save');
+  btn.textContent = 'Connecting...';
+  btn.disabled = true;
+
+  try {
+    iamToken = await getIAMToken(apiKey);
+    document.getElementById('apiBanner').style.display = 'none';
+    document.getElementById('sendBtn').disabled = false;
+    document.getElementById('statusPill').textContent = '● Live · Granite';
+    hideWelcome();
+    addAgentMessage('analyst', null,
+      `Hello! I'm **FinSight**, your AI financial analysis agent, powered by **IBM watsonx.ai** and the **Granite 3.8B Instruct** model.\n\nI can help you:\n• Analyze uploaded financial statements (revenue, margins, debt ratios)\n• Identify key risk factors and growth opportunities\n• Research market context and news about companies\n• Compare financial performance across periods\n\nUpload a financial statement to get started, or ask me anything.`
+    );
+  } catch (e) {
+    btn.textContent = 'Activate Agent';
+    btn.disabled = false;
+    alert('Could not connect: ' + e.message);
+  }
+}
+
+function selectAgent(type) {
+  activeAgent = type;
+  document.getElementById('card-analyst').classList.toggle('active', type === 'analyst');
+  document.getElementById('card-news').classList.toggle('active', type === 'news');
+  document.getElementById('topbarTitle').textContent =
+    type === 'analyst' ? 'Financial Analyst Agent' : 'News Research Agent';
+}
+
+async function handleFile(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  document.getElementById('fileName').textContent = file.name + ' — uploading...';
+  document.getElementById('fileBadge').classList.add('visible');
+
+  const form = new FormData();
+  form.append('file', file);
+
+  try {
+    const res  = await fetch('/api/upload', { method: 'POST', body: form });
+    const data = await res.json();
+    if (data.error) throw new Error(data.error);
+    fileContent = data.text;
+    document.getElementById('fileName').textContent = file.name + ' ✓';
+  } catch (err) {
+    document.getElementById('fileName').textContent = file.name + ' — parse failed';
+    fileContent = '';
+    alert('Could not read file: ' + err.message);
+  }
+}
+
+function useSuggestion(el) {
+  document.getElementById('userInput').value = el.textContent;
+  sendMessage();
+}
+
+function autoResize(el) {
+  el.style.height = 'auto';
+  el.style.height = Math.min(el.scrollHeight, 120) + 'px';
+}
+
+function escHtml(t) {
+  return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function formatBubble(text) {
+  return text
+    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+    .replace(/^[•\-] (.+)$/gm, '<li>$1</li>')
+    .replace(/(<li>[\s\S]*?<\/li>)+/g, m => `<ul>${m}</ul>`)
+    .split(/\n\n+/).map(p => p.trim().startsWith('<') ? p : `<p>${p}</p>`).join('');
+}
+
+function hideWelcome() {
+  const w = document.getElementById('welcomeState');
+  if (w) w.remove();
+}
+
+function scrollBottom() {
+  const a = document.getElementById('chatArea');
+  a.scrollTop = a.scrollHeight;
+}
+
+function addUserMessage(text) {
+  hideWelcome();
+  const d = document.createElement('div');
+  d.className = 'message user';
+  d.innerHTML = `<div class="avatar user">U</div><div class="bubble user">${escHtml(text)}</div>`;
+  document.getElementById('chatArea').appendChild(d);
+  scrollBottom();
+}
+
+function addAgentMessage(type, metrics, text) {
+  hideWelcome();
+  const tagLabel = type === 'news' ? 'News Research · Granite' : 'Financial Analyst · Granite';
+  const metricsHtml = metrics ? buildMetrics(metrics) : '';
+  const d = document.createElement('div');
+  d.className = 'message';
+  d.innerHTML = `<div class="avatar agent">G</div><div class="bubble agent"><span class="tag ${type}">${tagLabel}</span>${metricsHtml}<div>${formatBubble(text)}</div></div>`;
+  document.getElementById('chatArea').appendChild(d);
+  scrollBottom();
+}
+
+function buildMetrics(arr) {
+  return `<div class="metric-row">${arr.map(m =>
+    `<div class="metric-box">
+      <div class="metric-label">${m.label}</div>
+      <div class="metric-value">${m.value}</div>
+      <div class="metric-delta ${m.up ? 'delta-up' : 'delta-down'}">${m.delta}</div>
+    </div>`
+  ).join('')}</div>`;
+}
+
+function addTyping() {
+  hideWelcome();
+  const d = document.createElement('div');
+  d.id = 'typing';
+  d.className = 'message';
+  d.innerHTML = `<div class="avatar agent">G</div><div class="bubble agent"><div class="typing"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div></div>`;
+  document.getElementById('chatArea').appendChild(d);
+  scrollBottom();
+}
+
+function removeTyping() {
+  const t = document.getElementById('typing');
+  if (t) t.remove();
+}
+
+async function sendMessage() {
+  const input = document.getElementById('userInput');
+  const text  = input.value.trim();
+  if (!text || busy || !iamToken) return;
+
+  busy = true;
+  document.getElementById('sendBtn').disabled = true;
+  input.value = '';
+  input.style.height = 'auto';
+
+  addUserMessage(text);
+
+  const isNews = /news|recent|latest|headline|announce|market|today/i.test(text);
+  const agentType = isNews ? 'news' : 'analyst';
+
+  const systemPrompt = agentType === 'news'
+    ? `You are a financial news research agent powered by IBM Granite. Provide relevant market context, recent developments, and news analysis. Be specific and cite relevant trends. Keep responses concise and well-structured.`
+    : `You are FinSight, an expert AI financial analyst powered by IBM watsonx.ai and the Granite model. Analyze financial statements with precision and provide actionable insights.${fileContent ? `\n\nDocument uploaded:\n---\n${fileContent}\n---\nBase your analysis on this document when relevant.` : ''}\n\nAlways present specific numbers. Use bullet points for clarity. Highlight key risks and opportunities. Format numbers properly (M, B, %).`;
+
+  const wxMessages = [
+    { role: 'system', content: systemPrompt },
+    ...messages.slice(-8),
+    { role: 'user', content: text }
+  ];
+
+  addTyping();
+
+  try {
+    const res = await fetch(WX_URL, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${iamToken}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        model_id: MODEL_ID,
+        project_id: PROJECT_ID,
+        messages: wxMessages,
+        max_tokens: 800,
+        temperature: 0.7
+      })
+    });
+
+    if (res.status === 401) {
+      iamToken = await getIAMToken(apiKey);
+      busy = false;
+      document.getElementById('sendBtn').disabled = false;
+      removeTyping();
+      document.getElementById('userInput').value = text;
+      await sendMessage();
+      return;
+    }
+
+    const data = await res.json();
+    removeTyping();
+
+    const reply = data.choices?.[0]?.message?.content
+      || data.results?.[0]?.generated_text
+      || 'I could not generate a response. Please try again.';
+
+    messages.push({ role: 'user',      content: text  });
+    messages.push({ role: 'assistant', content: reply });
+
+    let metrics = null;
+    if (!isNews && /revenue|profit|margin|earnings|ratio/i.test(text)) {
+      const nums = reply.match(/\$[\d,.]+\s*[BMK]?|\d+\.?\d*%/g);
+      if (nums && nums.length >= 3) {
+        metrics = [
+          { label: 'Key Metric 1', value: nums[0], delta: '↑ vs prior', up: true },
+          { label: 'Key Metric 2', value: nums[1], delta: '↑ vs prior', up: true },
+          { label: 'Key Metric 3', value: nums[2], delta: 'stable',     up: true }
+        ];
+      }
+    }
+
+    addAgentMessage(agentType, metrics, reply);
+
+  } catch (err) {
+    removeTyping();
+    addAgentMessage('analyst', null,
+      `Connection error: ${err.message}\n\nYour IAM token may have expired. Please refresh and re-enter your API key.`
+    );
+  }
+
+  busy = false;
+  document.getElementById('sendBtn').disabled = false;
+}
+</script>
+</body>
+</html>
