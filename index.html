@@ -151,37 +151,97 @@
     padding-left: 13px;
   }
 
-  .upload-zone {
-    margin: 0 20px 10px;
-    background: rgba(255,255,255,0.02);
-    border: 1px dashed rgba(255,255,255,0.1);
+  /* ── SEC GUIDE ── */
+  .sec-guide {
+    margin: 0 0 10px;
+    background: rgba(55,138,221,0.04);
+    border: 1px solid rgba(55,138,221,0.12);
     border-radius: 8px;
-    padding: 16px;
-    text-align: center;
-    cursor: pointer;
-    transition: all 0.18s;
+    padding: 11px 13px;
   }
 
-  .upload-zone:hover {
-    background: rgba(55,138,221,0.05);
-    border-color: rgba(55,138,221,0.35);
+  .sec-guide-title {
+    font-size: 10.5px;
+    font-weight: 600;
+    color: rgba(255,255,255,0.45);
+    margin-bottom: 8px;
+    letter-spacing: 0.2px;
   }
 
-  .upload-zone input { display: none; }
+  .sec-steps {
+    list-style: none;
+    counter-reset: step;
+    padding: 0;
+    margin: 0;
+  }
 
-  .upload-text {
+  .sec-steps li {
+    counter-increment: step;
+    font-size: 10.5px;
+    color: rgba(255,255,255,0.28);
+    line-height: 1.55;
+    padding: 2px 0 2px 18px;
+    position: relative;
+  }
+
+  .sec-steps li::before {
+    content: counter(step);
+    position: absolute;
+    left: 0;
+    top: 2px;
+    font-size: 9px;
+    font-family: 'IBM Plex Mono', monospace;
+    color: rgba(55,138,221,0.6);
+    font-weight: 600;
+  }
+
+  .sec-link {
+    color: #6aaee8;
+    text-decoration: none;
+    border-bottom: 1px solid rgba(106,174,232,0.3);
+  }
+
+  .sec-link:hover { color: #85B7EB; border-color: rgba(133,183,235,0.5); }
+
+  .mono {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 9.5px;
+    color: rgba(255,255,255,0.4);
+    background: rgba(255,255,255,0.05);
+    padding: 1px 4px;
+    border-radius: 3px;
+  }
+
+  /* ── ATTACH BUTTON ── */
+  .attach-row {
+    margin-bottom: 8px;
+  }
+
+  .attach-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 6px;
+    padding: 7px 13px;
     font-size: 11.5px;
-    color: rgba(255,255,255,0.3);
-    line-height: 1.6;
+    color: rgba(255,255,255,0.45);
+    cursor: pointer;
+    transition: all 0.15s;
+    width: 100%;
+    justify-content: center;
+    font-family: 'IBM Plex Sans', sans-serif;
   }
 
-  .upload-text strong {
-    color: rgba(255,255,255,0.55);
-    font-weight: 500;
+  .attach-btn:hover {
+    background: rgba(55,138,221,0.08);
+    border-color: rgba(55,138,221,0.3);
+    color: #85B7EB;
   }
 
+  /* ── FILE BADGE ── */
   .file-badge {
-    margin: 0 20px 10px;
     background: rgba(29,158,117,0.08);
     border: 1px solid rgba(29,158,117,0.22);
     border-radius: 6px;
@@ -189,6 +249,7 @@
     display: none;
     align-items: center;
     gap: 7px;
+    margin-bottom: 4px;
   }
 
   .file-badge.visible { display: flex; }
@@ -202,6 +263,20 @@
     white-space: nowrap;
     font-family: 'IBM Plex Mono', monospace;
   }
+
+  .file-remove {
+    background: none;
+    border: none;
+    color: rgba(29,158,117,0.5);
+    cursor: pointer;
+    font-size: 11px;
+    padding: 0 2px;
+    line-height: 1;
+    flex-shrink: 0;
+    transition: color 0.15s;
+  }
+
+  .file-remove:hover { color: #E24B4A; }
 
   .arch-block {
     font-size: 10.5px;
@@ -596,14 +671,31 @@
 
     <div class="sidebar-section">
       <div class="sidebar-label">Knowledge Base</div>
-      <label class="upload-zone">
-        <input type="file" id="fileInput" accept=".pdf,.txt,.csv" onchange="handleFile(event)">
-        <div style="font-size:20px;margin-bottom:6px">📄</div>
-        <div class="upload-text"><strong>Upload financial statement</strong><br>PDF, TXT, or CSV accepted</div>
-      </label>
+
+      <div class="sec-guide">
+        <div class="sec-guide-title">📋 How to get a filing</div>
+        <ol class="sec-steps">
+          <li>Go to <a href="https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&type=10-K&dateb=&owner=include&count=10&search_text=" target="_blank" class="sec-link">EDGAR Company Search</a></li>
+          <li>Search a company (e.g. <span class="mono">Apple Inc</span>)</li>
+          <li>Set Filing Type to <span class="mono">10-K</span> → hit Search</li>
+          <li>Click a filing date → open the <span class="mono">.htm</span> or <span class="mono">.txt</span> link</li>
+          <li>Save: <span class="mono">File → Save Page As → Plain Text (.txt)</span></li>
+          <li>Attach below ↓</li>
+        </ol>
+      </div>
+
+      <div class="attach-row">
+        <label class="attach-btn" for="fileInput">
+          <svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor"><path d="M16.5 6v11.5c0 2.21-1.79 4-4 4s-4-1.79-4-4V5a2.5 2.5 0 0 1 5 0v10.5c0 .83-.67 1.5-1.5 1.5s-1.5-.67-1.5-1.5V6H9v9.5a3 3 0 0 0 6 0V5c0-2.21-1.79-4-4-4S7 2.79 7 5v12.5c0 3.04 2.46 5.5 5.5 5.5s5.5-2.46 5.5-5.5V6h-1.5z"/></svg>
+          Attach .txt / .htm file
+        </label>
+        <input type="file" id="fileInput" accept=".txt,.htm,.html,.csv,.pdf" onchange="handleFile(event)" style="display:none">
+      </div>
+
       <div class="file-badge" id="fileBadge">
         <span>📎</span>
         <span class="file-badge-name" id="fileName"></span>
+        <button class="file-remove" onclick="removeFile()" title="Remove file">✕</button>
       </div>
     </div>
 
@@ -677,7 +769,7 @@
 </div>
 
 <script>
-const PROJECT_ID = 'YOUR_PROJECT_ID';
+const PROJECT_ID = 'aa63ddd7-790c-4528-820e-48a7e9a93a84';
 const WX_URL  = '/api/chat';
 const MODEL_ID = 'ibm/granite-3-8b-instruct';
 
@@ -732,10 +824,17 @@ function selectAgent(type) {
     type === 'analyst' ? 'Financial Analyst Agent' : 'News Research Agent';
 }
 
+function removeFile() {
+  fileContent = '';
+  document.getElementById('fileBadge').classList.remove('visible');
+  document.getElementById('fileName').textContent = '';
+  document.getElementById('fileInput').value = '';
+}
+
 async function handleFile(e) {
   const file = e.target.files[0];
   if (!file) return;
-  document.getElementById('fileName').textContent = file.name + ' — uploading...';
+  document.getElementById('fileName').textContent = file.name + ' — reading...';
   document.getElementById('fileBadge').classList.add('visible');
 
   const form = new FormData();
@@ -846,9 +945,54 @@ async function sendMessage() {
   const isNews = /news|recent|latest|headline|announce|market|today/i.test(text);
   const agentType = isNews ? 'news' : 'analyst';
 
+  // ── Company mismatch detection ──
+  const COMPANIES = [
+    { names: ['apple', 'aapl'], label: 'Apple' },
+    { names: ['wells fargo', 'wfc'], label: 'Wells Fargo' },
+    { names: ['google', 'alphabet', 'googl'], label: 'Google' },
+    { names: ['microsoft', 'msft'], label: 'Microsoft' },
+    { names: ['amazon', 'amzn'], label: 'Amazon' },
+    { names: ['tesla', 'tsla'], label: 'Tesla' },
+    { names: ['meta', 'facebook'], label: 'Meta' },
+    { names: ['nvidia', 'nvda'], label: 'NVIDIA' },
+    { names: ['jpmorgan', 'jp morgan', 'jpm'], label: 'JPMorgan' },
+    { names: ['goldman', 'gs'], label: 'Goldman Sachs' },
+    { names: ['netflix', 'nflx'], label: 'Netflix' },
+    { names: ['bank of america', 'bac'], label: 'Bank of America' },
+    { names: ['berkshire', 'brk'], label: 'Berkshire Hathaway' },
+  ];
+
+  if (fileContent && !isNews) {
+    const textLower = text.toLowerCase();
+    const fileLower = fileContent.toLowerCase();
+    const mentionedCo = COMPANIES.find(c => c.names.some(n => textLower.includes(n)));
+    const uploadedCo  = COMPANIES.find(c => c.names.some(n => fileLower.includes(n)));
+    if (mentionedCo && uploadedCo && mentionedCo.label !== uploadedCo.label) {
+      removeTyping();
+      addAgentMessage('analyst', null,
+        `⚠️ **Company mismatch detected.**\n\nYou asked about **${mentionedCo.label}**, but the uploaded document appears to be a **${uploadedCo.label}** filing.\n\nPlease remove the current file and attach a **${mentionedCo.label}** filing, or rephrase your question to refer to ${uploadedCo.label}.`
+      );
+      busy = false;
+      document.getElementById('sendBtn').disabled = false;
+      return;
+    }
+  }
+
   const systemPrompt = agentType === 'news'
-    ? `You are a financial news research agent powered by IBM Granite. Provide relevant market context, recent developments, and news analysis. Be specific and cite relevant trends. Keep responses concise and well-structured.`
-    : `You are FinSight, an expert AI financial analyst powered by IBM watsonx.ai and the Granite model. Analyze financial statements with precision and provide actionable insights.${fileContent ? `\n\nDocument uploaded:\n---\n${fileContent}\n---\nBase your analysis on this document when relevant.` : ''}\n\nAlways present specific numbers. Use bullet points for clarity. Highlight key risks and opportunities. Format numbers properly (M, B, %).`;
+    ? `You are a financial news research agent powered by IBM Granite. 
+
+IMPORTANT: You do NOT have access to the live internet or real-time news feeds. Be transparent about this limitation at the start of your response.
+
+You can provide:
+1. Context based on the uploaded filing (if available) — reference specific facts from it
+2. General background knowledge about the company up to your training data cutoff
+3. Known regulatory, macro, or industry trends relevant to the company
+
+You must NEVER fabricate specific news headlines, earnings figures, dates, or events that you are not certain about. If you don't know something, say so clearly.
+
+Always end your response with: "⚠️ For live news, check Bloomberg, Reuters, or the company's investor relations page."
+${fileContent ? `\n\nUploaded filing context:\n---\n${fileContent.slice(0, 4000)}\n---` : ''}`
+    : `You are FinSight, an expert AI financial analyst powered by IBM watsonx.ai and the Granite model. Analyze financial statements with precision and provide actionable insights.${fileContent ? `\n\nDocument uploaded:\n---\n${fileContent}\n---\nBase your analysis strictly on this document. Do not invent numbers not present in it.` : ''}\n\nAlways present specific numbers from the document. Use bullet points for clarity. Highlight key risks and opportunities. Format numbers properly (M, B, %).`;
 
   const wxMessages = [
     { role: 'system', content: systemPrompt },
